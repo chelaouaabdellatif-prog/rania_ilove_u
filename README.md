@@ -23,3 +23,11 @@ npm start        # يفتح على http://localhost:3000
 - `src/components/Today.jsx`: الصفحة الرئيسية (مهام اليوم).
 - `src/components/Admin.jsx`: لوحة المشرف.
 - `server.js`: الخادم وكلمات السر والحفظ.
+
+## Cloudflare Workers
+
+`wrangler.jsonc` + `worker/index.js` : même API que `server.js`, données dans Cloudflare KV.
+
+- Build command : `npm run build`
+- Deploy command : `npx wrangler deploy`
+- Première visite du site : choisir les mots de passe (admin + Rania).
