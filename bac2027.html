@@ -1,0 +1,417 @@
+<title>برنامج بكالوريا 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#EDF1F4;--surface:#FFFFFF;--sunk:#E3E9EE;--ink:#15212B;--muted:#586876;--line:#D3DBE2;
+  --accent:#1F5F8B;--accent-ink:#FFFFFF;--good:#1E7A4F;--warn:#A5621A;
+  --de:#B4462E;--en:#2E6DA4;--fr:#6B4FA0;--ar:#1E7A5A;--am:#A27A1E;--hg:#8A5A3C;--is:#2F7F7A;--bac:#15212B;--rev:#586876;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg:#0F161C;--surface:#172128;--sunk:#1D2931;--ink:#E4ECF1;--muted:#93A3AF;--line:#2A3843;
+  --accent:#6FA8D6;--accent-ink:#0F161C;--good:#5CC08C;--warn:#E0A35A;
+  --de:#E07A62;--en:#6FA8D6;--fr:#A58ADB;--ar:#5CC09A;--am:#D6B056;--hg:#C99472;--is:#62BDB6;--bac:#E4ECF1;--rev:#93A3AF;}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--bg:#0F161C;--surface:#172128;--sunk:#1D2931;--ink:#E4ECF1;--muted:#93A3AF;--line:#2A3843;
+  --accent:#6FA8D6;--accent-ink:#0F161C;--good:#5CC08C;--warn:#E0A35A;
+  --de:#E07A62;--en:#6FA8D6;--fr:#A58ADB;--ar:#5CC09A;--am:#D6B056;--hg:#C99472;--is:#62BDB6;--bac:#E4ECF1;--rev:#93A3AF;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;font-size:15px;line-height:1.6;padding:0 16px}
+h1,h2,h3{font-family:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;text-wrap:balance;margin:0;line-height:1.3}
+.wrap{max-width:1180px;margin:0 auto;padding-block:24px 48px;display:grid;gap:22px}
+.mono{font-family:"IBM Plex Mono",Consolas,monospace;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* lock */
+#lock{min-height:80vh;display:grid;place-items:center}
+.lockbox{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 24px;width:min(380px,100%);display:grid;gap:14px}
+.lockbox p{margin:0;color:var(--muted);font-size:14px}
+.lockbox input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--sunk);color:var(--ink);width:100%}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:10px 16px;font-weight:600}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.err{color:var(--de);font-size:14px;min-height:1.4em}
+
+/* header */
+header{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end}
+header .eyebrow{font-size:13px;color:var(--muted);letter-spacing:.02em}
+header h1{font-size:clamp(26px,4vw,38px)}
+.count{text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 18px}
+.count b{display:block;font-family:"Reem Kufi",sans-serif;font-size:34px;line-height:1.1;color:var(--accent)}
+.count small{color:var(--muted);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:8px}
+.stat .lbl{font-size:13px;color:var(--muted)}
+.stat .val{font-family:"Reem Kufi",sans-serif;font-size:24px}
+.bar{height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .4s}
+
+nav{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+nav button{background:none;border:0;padding:10px 14px;border-bottom:3px solid transparent;color:var(--muted);font-weight:500}
+nav button[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
+nav .sp{flex:1}
+nav .lockbtn{font-size:13px}
+
+/* week */
+.weekhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.weekhead .nav2{display:flex;gap:6px;align-items:center}
+.weekhead .nav2 button{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;gap:8px}
+.day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.day h3{font-size:17px;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.day h3 small{font-family:"IBM Plex Sans Arabic",sans-serif;font-size:12px;color:var(--muted);font-weight:400}
+.block{font-size:12.5px;border-radius:8px;padding:6px 8px;background:var(--sunk);color:var(--muted)}
+.block.work{background:repeating-linear-gradient(-45deg,var(--sunk) 0 6px,transparent 6px 12px);border:1px dashed var(--line)}
+.ses{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:start;padding:7px 8px;border-radius:8px;border-inline-start:4px solid var(--c);background:color-mix(in srgb,var(--c) 9%,var(--surface));cursor:pointer;text-align:start;border-top:0;border-bottom:0;border-inline-end:0;width:100%}
+.ses .t{grid-column:2;font-size:11.5px;color:var(--muted)}
+.ses .s{grid-column:2;font-weight:600;font-size:13.5px;line-height:1.35}
+.ses .d{grid-column:2;font-size:12.5px;color:var(--muted);line-height:1.4}
+.ses .box{grid-row:1/4;width:18px;height:18px;border-radius:5px;border:2px solid var(--c);margin-top:2px;display:grid;place-items:center;font-size:12px;line-height:1;color:var(--surface)}
+.ses.done .box{background:var(--c)}
+.ses.done .s,.ses.done .d{text-decoration:line-through;opacity:.65}
+.ses.lesson{outline:1px solid var(--c)}
+.tag{display:inline-block;font-size:10.5px;padding:0 6px;border-radius:99px;background:var(--c);color:var(--surface);margin-inline-start:4px;vertical-align:1px;font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+
+/* curriculum */
+.subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.subj{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start;border-top:4px solid var(--c)}
+.subj header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.subj h3{font-size:18px}
+.subj .coef{font-size:12px;color:var(--muted)}
+.subj .bar i{background:var(--c)}
+.units{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.units label{display:flex;gap:10px;align-items:flex-start;padding:5px 4px;border-radius:6px;cursor:pointer;font-size:14px}
+.units label:hover{background:var(--sunk)}
+.units input{accent-color:var(--c);width:17px;height:17px;margin-top:3px;flex:none}
+.units input:checked+span{color:var(--muted);text-decoration:line-through}
+
+/* year */
+.phases{display:grid;gap:12px}
+.phase{display:grid;grid-template-columns:170px 1fr;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.phase.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.phase .when{font-weight:600}
+.phase .when small{display:block;color:var(--muted);font-weight:400;font-size:13px}
+.phase ul{margin:6px 0 0;padding-inline-start:20px;display:grid;gap:3px;font-size:14px}
+.pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;background:var(--accent);color:var(--accent-ink);margin-inline-start:6px}
+.months{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}
+.months div{font-size:11.5px;text-align:center;color:var(--muted)}
+.months div i{display:block;height:10px;border-radius:3px;background:var(--sunk);margin-bottom:4px}
+.months div.past i{background:var(--accent);opacity:.55}
+.months div.cur i{background:var(--accent)}
+.months div.cur{color:var(--ink);font-weight:600}
+.note{font-size:13px;color:var(--muted);margin:0}
+.tips{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 20px}
+.tips ul{margin:8px 0 0;padding-inline-start:20px;display:grid;gap:4px;font-size:14px}
+.save{font-size:12px;color:var(--muted)}
+
+@media (max-width:1000px){.days{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){
+  header{grid-template-columns:1fr}.count{justify-self:start}
+  .stats{grid-template-columns:1fr}
+  .days{grid-template-columns:1fr}
+  .phase{grid-template-columns:1fr;gap:6px}
+  .months div{font-size:10px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div dir="rtl" lang="ar">
+<section id="lock">
+  <form class="lockbox" id="lockForm" autocomplete="off">
+    <h2 id="lockTitle">صفحة محمية</h2>
+    <p id="lockHint">أدخل كلمة السر لفتح برنامج المراجعة.</p>
+    <input id="pw" type="password" placeholder="كلمة السر" aria-label="كلمة السر">
+    <input id="pw2" type="password" placeholder="أعد كتابة كلمة السر" aria-label="تأكيد كلمة السر" hidden>
+    <div class="err" id="lockErr"></div>
+    <button class="btn" type="submit" id="lockBtn">فتح</button>
+  </form>
+</section>
+
+<main class="wrap" id="app" hidden>
+  <header>
+    <div>
+      <div class="eyebrow">شعبة لغات أجنبية · الألمانية · السنة الثالثة ثانوي 2026–2027</div>
+      <h1>برنامج المراجعة لبكالوريا 2027</h1>
+    </div>
+    <div class="count"><b id="daysLeft" class="mono">–</b><small>يوم على البكالوريا (تاريخ تقديري: <span id="bacDate"></span>)</small></div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><span class="lbl">تقدم البرنامج (مرجّح بالمعاملات)</span><span class="val" id="stUnits">0%</span><div class="bar"><i id="barUnits" style="width:0"></i></div></div>
+    <div class="stat"><span class="lbl">حصص هذا الأسبوع</span><span class="val" id="stWeek">0 / 0</span><div class="bar"><i id="barWeek" style="width:0"></i></div></div>
+    <div class="stat"><span class="lbl">مرور السنة الدراسية</span><span class="val" id="stYear">0%</span><div class="bar"><i id="barYear" style="width:0"></i></div></div>
+  </section>
+
+  <nav role="tablist">
+    <button role="tab" data-tab="week" aria-selected="true">البرنامج الأسبوعي</button>
+    <button role="tab" data-tab="units" aria-selected="false">المنهج والتقدم</button>
+    <button role="tab" data-tab="year" aria-selected="false">خطة السنة</button>
+    <span class="sp"></span>
+    <span class="save" id="saveState"></span>
+    <button class="btn ghost lockbtn" id="relock" type="button">قفل</button>
+  </nav>
+
+  <section id="tab-week" class="wrap" style="padding:0;gap:14px">
+    <div class="weekhead">
+      <h2 style="font-size:20px">أسبوع <span id="weekLbl" class="mono"></span></h2>
+      <div class="nav2"><button id="prevW" type="button">→ السابق</button><button id="thisW" type="button">هذا الأسبوع</button><button id="nextW" type="button">التالي ←</button></div>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="days" id="days"></div>
+    <p class="note">اضغط على أي حصة لتعليمها كمنجزة. أيام العمل (الأحد، الاثنين، الخميس 8:00–16:00) فيها حصتان مسائيتان فقط، مع استراحة للعشاء.</p>
+  </section>
+
+  <section id="tab-units" hidden>
+    <div class="subjects" id="subjects"></div>
+  </section>
+
+  <section id="tab-year" hidden class="wrap" style="padding:0;gap:14px">
+    <div class="months" id="months"></div>
+    <div class="phases" id="phases"></div>
+    <div class="tips">
+      <h3 style="font-size:17px">قواعد ثابتة طوال السنة</h3>
+      <ul>
+        <li>الألمانية معاملها 6: أول ما تبدأ به في كل يوم فراغ، وهي أكبر حجم ساعي في البرنامج.</li>
+        <li>دفتر أخطاء لكل لغة: كل خطأ في تمرين أو موضوع يُكتب مع تصحيحه، ويُراجع يوم الخميس.</li>
+        <li>مفردات يومية: 10 إلى 20 كلمة (ألمانية/إنجليزية/فرنسية) على بطاقات، مراجعة متباعدة.</li>
+        <li>من جانفي: موضوع بكالوريا كامل كل سبت بالتوقيت الرسمي، ثم التصحيح بالسلم الرسمي.</li>
+        <li>الجمعة مساءً والسبت مساءً راحة. النوم قبل منتصف الليل في أيام العمل.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+(function(){
+const BAC = new Date(2027,5,13); // تاريخ تقديري
+const YEAR_START = new Date(2026,8,21);
+const SUBJ = {
+  de:{n:'الألمانية',coef:6},en:{n:'الإنجليزية',coef:4},fr:{n:'الفرنسية',coef:4},
+  ar:{n:'العربية',coef:2},hg:{n:'تاريخ وجغرافيا',coef:2},
+  is:{n:'التربية الإسلامية',coef:2},bac:{n:'موضوع بكالوريا'},rev:{n:'تقييم الأسبوع'}
+};
+const BAC_ROT = ['de','en','fr','hg','ar','is'];
+// 0 = الأحد ... 6 = السبت
+const WEEK = [
+  {n:'الأحد',work:true,s:[
+    ['17:30','18:30','en','مفردات وقواعد الوحدة الحالية'],
+    ['20:00','21:00','de','Wortschatz: 20 كلمة جديدة + جمل']]},
+  {n:'الاثنين',work:true,s:[
+    ['17:30','18:30','de','Grammatik: قاعدة + تمارين'],
+    ['20:00','21:00','hg','درس تاريخ + بطاقة تلخيص (تواريخ، شخصيات، مصطلحات)']]},
+  {n:'الثلاثاء',s:[
+    ['09:00','10:30','de','Leseverstehen: فهم نص + أسئلة'],
+    ['10:45','12:00','fr','Projet en cours: lecture + outils de langue'],
+    ['14:00','15:00','ar','نص أدبي + بلاغة'],
+    ['15:15','16:15','hg','جغرافيا: درس + خريطة/مخطط'],
+    ['20:00','21:00','en','Writing: فقرة أو مقال قصير']]},
+  {n:'الأربعاء',s:[
+    ['09:00','10:30','en','Reading comprehension + grammar'],
+    ['10:45','12:00','de','Schreiben: تعبير كتابي'],
+    ['14:00','15:00','is','درس جديد + تلخيص'],
+    ['15:15','16:00','is','حفظ الآيات والأحاديث المقررة'],
+    ['20:00','21:00','fr','Expression écrite / compte rendu']]},
+  {n:'الخميس',work:true,s:[
+    ['17:30','18:30','de','مراجعة الأسبوع + دفتر الأخطاء'],
+    ['20:00','20:45','ar','نحو + عروض']]},
+  {n:'الجمعة',s:[
+    ['09:30','10:30','is','مراجعة وحفظ'],
+    ['14:00','15:30','fr','درس خصوصي في الفرنسية',true],
+    ['17:00','18:00','fr','حل واجب الدرس الخصوصي']]},
+  {n:'السبت',s:[
+    ['09:00','10:30','de','درس خصوصي في الألمانية',true],
+    ['11:00','12:00','de','حل الواجب + مراجعة الدرس'],
+    ['15:00','16:30','bac','موضوع بكالوريا سابق'],
+    ['17:00','17:30','rev','تقييم الأسبوع وتحضير الأسبوع القادم']]}
+];
+const UNITS = {
+  de:['Grammatik: Passiv (Präsens / Präteritum / Perfekt)','Grammatik: Konjunktiv II','Grammatik: Relativsätze','Grammatik: Nebensätze (weil, dass, obwohl, wenn, als)','Grammatik: Präteritum der starken Verben','Thema: Umwelt und Natur','Thema: Medien und Technik','Thema: Arbeit, Beruf und Zukunft','Thema: Familie und Gesellschaft','Thema: Reisen und Kulturen','Schreiben: Brief / E-Mail / Stellungnahme','مواضيع بكالوريا ألمانية (10 مواضيع)'],
+  en:['Unit 1: Exploring the Past','Unit 2: Ill-gotten Gains Never Prosper','Unit 3: Schools: Different and Alike','Unit 4: Safety First','Unit 5: It’s a Giant Leap for Mankind','Unit 6: We Are a Family','Grammar: tenses, passive, reported speech, conditionals','Writing: essay / letter','مواضيع بكالوريا إنجليزية (10 مواضيع)'],
+  fr:['Projet 1: Textes et documents d’histoire','Projet 2: Le débat d’idées','Projet 3: L’appel','Projet 4: La nouvelle fantastique','Outils: compte rendu objectif / critique','Outils: discours rapporté, connecteurs, modalisation','مواضيع بكالوريا فرنسية (10 مواضيع)'],
+  ar:['عصر الضعف (المماليك والعثمانيون)','شعر الإحياء والنهضة','الشعر الرومانسي وأدب المهجر','الشعر الحر (فلسطين والثورة الجزائرية)','القصة والمسرحية','النحو والصرف','البلاغة','العروض','مواضيع بكالوريا عربية (8 مواضيع)'],
+  hg:['تاريخ: الحرب الباردة وتطورها','تاريخ: من الثنائية إلى الأحادية القطبية','تاريخ: العالم الثالث بين الاستقلال والتنمية','تاريخ: الثورة الجزائرية 1954–1962','تاريخ: بناء الدولة الجزائرية','جغرافيا: الاقتصاد العالمي ومظاهر التباين','جغرافيا: الولايات المتحدة الأمريكية','جغرافيا: الاتحاد الأوروبي','جغرافيا: شرق وجنوب شرق آسيا','جغرافيا: الاقتصاد الجزائري','مواضيع بكالوريا تاريخ وجغرافيا (8 مواضيع)'],
+  is:['وسائل القرآن في تثبيت العقيدة','العقل في القرآن الكريم','الحرية الشخصية ومدى ارتباطها بحقوق الإنسان','الصحة النفسية والجسمية','من المعاملات المالية (الربا، الوقف)','العلاقات الاجتماعية والأسرة','الميراث','مقاصد الشريعة الإسلامية','مواضيع بكالوريا تربية إسلامية (8 مواضيع)']
+};
+const PHASES = [
+  {a:new Date(2026,9,1),b:new Date(2026,11,31),t:'الفصل الأول: بناء الأساس',m:'أكتوبر – ديسمبر 2026',
+   l:['إنهاء الوحدات الأولى في كل مادة بالتوازي مع الدروس الخصوصية','بطاقات مفردات للألمانية والإنجليزية والفرنسية منذ الأسبوع الأول','بطاقات تلخيص للتاريخ والتربية الإسلامية','في آخر ديسمبر: موضوع بكالوريا واحد في الألمانية والإنجليزية لقياس المستوى']},
+  {a:new Date(2027,0,1),b:new Date(2027,2,31),t:'الفصل الثاني: إكمال البرنامج',m:'جانفي – مارس 2027',
+   l:['إكمال باقي الوحدات والمحاور','موضوع بكالوريا كامل كل سبت بالتوقيت (بالتناوب بين المواد)','الجغرافيا: رسم الخرائط والمخططات من الذاكرة','مراجعة دفتر الأخطاء كل خميس']},
+  {a:new Date(2027,3,1),b:new Date(2027,4,31),t:'الفصل الثالث: المراجعة الشاملة',m:'أفريل – ماي 2027',
+   l:['مواضيع بكالوريا 2015–2026 لكل مادة، مع التصحيح بالسلم الرسمي','أولوية للمواد ذات المعامل الكبير: الألمانية ثم الإنجليزية والفرنسية','تحفيظ نهائي للتواريخ والآيات والمصطلحات','امتحان تجريبي كامل في آخر ماي']},
+  {a:new Date(2027,5,1),b:BAC,t:'الأسابيع الأخيرة',m:'جوان 2027',
+   l:['مراجعة خفيفة من البطاقات ودفتر الأخطاء فقط','لا دروس جديدة','النوم الكافي والتحضير للوثائق والطريق إلى مركز الامتحان']}
+];
+const MONTHS = [['أكتوبر',2026,9],['نوفمبر',2026,10],['ديسمبر',2026,11],['جانفي',2027,0],['فيفري',2027,1],['مارس',2027,2],['أفريل',2027,3],['ماي',2027,4],['جوان',2027,5]];
+
+let state = {units:{}, weeks:{}};
+let db = null, stateRef = null, lockRef = null;
+let weekOffset = 0;
+const $ = id => document.getElementById(id);
+
+// storage (db when available, otherwise this browser)
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+async function loadLock(){
+  if(lockRef){try{const s=await lockRef.get();return s.exists?s.data().hash:null}catch(e){}}
+  const v=lsGet('bac27-lock');return v&&v.hash||null;
+}
+async function saveLock(hash){
+  lsSet('bac27-lock',{hash});
+  if(lockRef){try{await lockRef.set({hash})}catch(e){}}
+}
+let saveTimer=null, saving=Promise.resolve();
+function persist(){
+  lsSet('bac27-state',state);
+  if(!stateRef){$('saveState').textContent='محفوظ في هذا المتصفح';return}
+  $('saveState').textContent='جارٍ الحفظ…';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    const body=JSON.parse(JSON.stringify(state));
+    saving=saving.then(()=>stateRef.set(body)).then(()=>{$('saveState').textContent='محفوظ'}).catch(()=>{$('saveState').textContent='تعذّر الحفظ، البيانات محفوظة في هذا المتصفح'});
+  },600);
+}
+async function sha(s){
+  const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('bac2027:'+s));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+// dates
+function sundayOf(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-x.getDay());return x}
+function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fmt(d){return d.getDate()+'/'+(d.getMonth()+1)}
+function weekNo(sun){return Math.floor((sun-sundayOf(YEAR_START))/(7*864e5))}
+
+function renderLegend(){
+  $('legend').innerHTML=['de','en','fr','ar','hg','is','bac'].map(k=>`<span style="--c:var(--${k})"><i></i>${SUBJ[k].n}${SUBJ[k].coef?` <span class="mono">×${SUBJ[k].coef}</span>`:''}</span>`).join('');
+}
+function renderWeek(){
+  const sun=sundayOf(new Date()); sun.setDate(sun.getDate()+weekOffset*7);
+  const wk=key(sun), done=state.weeks[wk]||{};
+  const end=new Date(sun);end.setDate(end.getDate()+6);
+  $('weekLbl').textContent=fmt(sun)+' – '+fmt(end);
+  const todayK=key(new Date());
+  const rot=BAC_ROT[((weekNo(sun)%BAC_ROT.length)+BAC_ROT.length)%BAC_ROT.length];
+  $('days').innerHTML=WEEK.map((day,i)=>{
+    const d=new Date(sun);d.setDate(d.getDate()+i);
+    let h=`<div class="day${key(d)===todayK?' today':''}"><h3>${day.n}<small class="mono">${fmt(d)}</small></h3>`;
+    if(day.work)h+=`<div class="block work">عمل <span class="mono">08:00–16:00</span></div>`;
+    day.s.forEach((s,j)=>{
+      const id=i+'-'+j, c=s[2], isD=!!done[id];
+      const extra=c==='bac'?` <span class="tag" style="--c:var(--${rot})">${SUBJ[rot].n}</span>`:'';
+      h+=`<button type="button" class="ses${isD?' done':''}${s[4]?' lesson':''}" data-id="${id}" style="--c:var(--${c})" aria-pressed="${isD}">
+        <span class="box">${isD?'✓':''}</span>
+        <span class="t mono">${s[0]}–${s[1]}</span>
+        <span class="s">${SUBJ[c].n}${s[4]?'<span class="tag">درس خصوصي</span>':''}${extra}</span>
+        <span class="d">${s[3]}</span></button>`;
+    });
+    if(i===5||i===6)h+=`<div class="block">المساء: راحة</div>`;
+    return h+'</div>';
+  }).join('');
+}
+function totalSessions(){return WEEK.reduce((a,d)=>a+d.s.length,0)}
+function renderUnits(){
+  $('subjects').innerHTML=Object.keys(UNITS).map(k=>{
+    const list=UNITS[k], n=list.filter((_,i)=>state.units[k+'-'+i]).length, p=Math.round(n/list.length*100);
+    return `<article class="subj" style="--c:var(--${k})">
+      <header><h3>${SUBJ[k].n}</h3><span class="coef">المعامل <span class="mono">${SUBJ[k].coef}</span> · <span class="mono">${n}/${list.length}</span></span></header>
+      <div class="bar"><i style="width:${p}%"></i></div>
+      <ul class="units">${list.map((u,i)=>`<li><label><input type="checkbox" id="u-${k}-${i}" data-u="${k}-${i}"${state.units[k+'-'+i]?' checked':''}><span>${u}</span></label></li>`).join('')}</ul>
+    </article>`;
+  }).join('');
+}
+function renderYear(){
+  const now=new Date();
+  $('months').innerHTML=MONTHS.map(([n,y,m])=>{
+    const cls=(now.getFullYear()>y||(now.getFullYear()===y&&now.getMonth()>m))?'past':(now.getFullYear()===y&&now.getMonth()===m?'cur':'');
+    return `<div class="${cls}"><i></i>${n}</div>`}).join('');
+  $('phases').innerHTML=PHASES.map(p=>{
+    const cur=now>=p.a&&now<=p.b;
+    return `<div class="phase${cur?' now':''}"><div class="when">${p.m}${cur?'<span class="pill">الآن</span>':''}</div>
+      <div><h3 style="font-size:17px">${p.t}</h3><ul>${p.l.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>`}).join('')
+    + (now<PHASES[0].a?`<p class="note">قبل أكتوبر: ابدأ بالبرنامج الأسبوعي مباشرة وحضّر الدفاتر والبطاقات.</p>`:'');
+}
+function renderStats(){
+  let tw=0,dw=0;
+  for(const k in UNITS){const w=SUBJ[k].coef;UNITS[k].forEach((_,i)=>{tw+=w;if(state.units[k+'-'+i])dw+=w})}
+  const pu=Math.round(dw/tw*100);
+  $('stUnits').textContent=pu+'%';$('barUnits').style.width=pu+'%';
+  const wk=key(sundayOf(new Date())), n=Object.keys(state.weeks[wk]||{}).length, t=totalSessions();
+  $('stWeek').textContent=n+' / '+t;$('barWeek').style.width=Math.round(n/t*100)+'%';
+  const py=Math.max(0,Math.min(100,Math.round((Date.now()-YEAR_START)/(BAC-YEAR_START)*100)));
+  $('stYear').textContent=py+'%';$('barYear').style.width=py+'%';
+  $('daysLeft').textContent=Math.max(0,Math.ceil((BAC-new Date())/864e5));
+  $('bacDate').textContent=fmt(BAC)+'/2027';
+}
+function renderAll(){renderWeek();renderUnits();renderYear();renderStats()}
+
+// events
+$('days').addEventListener('click',e=>{
+  const b=e.target.closest('.ses');if(!b)return;
+  const sun=sundayOf(new Date());sun.setDate(sun.getDate()+weekOffset*7);
+  const wk=key(sun);state.weeks[wk]=state.weeks[wk]||{};
+  if(state.weeks[wk][b.dataset.id])delete state.weeks[wk][b.dataset.id];else state.weeks[wk][b.dataset.id]=1;
+  renderWeek();renderStats();persist();
+});
+$('subjects').addEventListener('change',e=>{
+  const u=e.target.dataset.u;if(!u)return;
+  if(e.target.checked)state.units[u]=1;else delete state.units[u];
+  renderUnits();renderStats();persist();
+});
+$('prevW').onclick=()=>{weekOffset--;renderWeek()};
+$('nextW').onclick=()=>{weekOffset++;renderWeek()};
+$('thisW').onclick=()=>{weekOffset=0;renderWeek()};
+document.querySelectorAll('nav [data-tab]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav [data-tab]').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['week','units','year'].forEach(t=>$('tab-'+t).hidden=t!==b.dataset.tab);
+});
+$('relock').onclick=()=>{try{sessionStorage.removeItem('bac27-open')}catch(e){}$('app').hidden=true;$('lock').hidden=false;$('pw').value='';setupLock()};
+
+// lock flow
+let storedHash=null;
+async function setupLock(){
+  storedHash=await loadLock();
+  const first=!storedHash;
+  $('pw2').hidden=!first;
+  $('lockTitle').textContent=first?'اختر كلمة سر':'صفحة محمية';
+  $('lockHint').textContent=first?'هذه أول مرة تفتح فيها الصفحة. اختر كلمة سر (4 أحرف على الأقل) ستُطلب في كل مرة.':'أدخل كلمة السر لفتح برنامج المراجعة.';
+  $('lockBtn').textContent=first?'حفظ وفتح':'فتح';
+  $('pw').focus();
+}
+$('lockForm').addEventListener('submit',async e=>{
+  e.preventDefault();$('lockErr').textContent='';
+  const p=$('pw').value;
+  if(!storedHash){
+    if(p.length<4){$('lockErr').textContent='كلمة السر قصيرة: 4 أحرف على الأقل.';return}
+    if(p!==$('pw2').value){$('lockErr').textContent='الكلمتان غير متطابقتين. أعد كتابتهما.';return}
+    storedHash=await sha(p);await saveLock(storedHash);
+  }else if(await sha(p)!==storedHash){$('lockErr').textContent='كلمة السر غير صحيحة.';$('pw').select();return}
+  try{sessionStorage.setItem('bac27-open','1')}catch(e){}
+  open();
+});
+function open(){$('lock').hidden=true;$('app').hidden=false;renderAll()}
+
+async function connect(){
+  try{db=window.claude&&window.claude.use?await window.claude.use('db'):null}catch(e){db=null}
+  if(!db){$('saveState').textContent='محفوظ في هذا المتصفح';return}
+  stateRef=db.doc('progress/state');lockRef=db.doc('settings/lock');
+  try{const s=await stateRef.get();if(s.exists){const d=s.data();state={units:{...(d.units||{})},weeks:JSON.parse(JSON.stringify(d.weeks||{}))}}}catch(e){}
+  $('saveState').textContent='محفوظ';
+}
+const ready=connect();
+async function boot(){
+  const local=lsGet('bac27-state');if(local&&local.units)state=local;
+  renderLegend();
+  $('lockBtn').disabled=true;$('lockHint').textContent='جارٍ التحميل…';
+  await ready;$('lockBtn').disabled=false;
+  let opened=false;try{opened=sessionStorage.getItem('bac27-open')==='1'}catch(e){}
+  if(opened&&await loadLock())open();else setupLock();
+}
+boot();
+})();
+</script>
