@@ -1,6 +1,8 @@
 // Cloudflare Worker: same API as server.js, data stored in KV (binding: DB).
 // Static files (dist/) are served by the assets binding.
 
+import { quizRoute } from '../shared/quiz.js';
+
 const SESSION_DAYS = 30;
 const enc = new TextEncoder();
 
@@ -143,6 +145,13 @@ async function api(req, env, path) {
     await save(env, db);
     return json({ ok: true });
   }
+
+  const db = await load(env);
+  const r = await quizRoute({
+    method, path, query: Object.fromEntries(new URL(req.url).searchParams), body,
+    role: s.role, db, save: () => save(env, db),
+  });
+  if (r) return json(r.body, r.status);
 
   return err(404, 'غير موجود');
 }

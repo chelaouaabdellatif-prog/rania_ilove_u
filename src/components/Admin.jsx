@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../api.js';
 import { key, sundayOf, unitsProgress, totalSessions, UNITS, SUBJ } from '../data.js';
 import Marquee from './Marquee.jsx';
+import QuizAdmin from './QuizAdmin.jsx';
 
 export default function Admin({ ann, setAnn, data, onExpired }) {
   const [text, setText] = useState(ann?.text || '');
@@ -77,6 +78,8 @@ export default function Admin({ ann, setAnn, data, onExpired }) {
         </div>
         {msg && <p className="note-ok" role="status">{msg}</p>}
       </div>
+
+      <QuizAdmin onExpired={onExpired} />
 
       <div className="card stack">
         <h3>تقدم رانيا</h3>

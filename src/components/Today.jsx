@@ -16,7 +16,7 @@ function Ring({ value }) {
   );
 }
 
-export default function Today({ data, setData }) {
+export default function Today({ data, setData, quizPending, openQuiz }) {
   const [now, setNow] = useState(new Date());
   const [text, setText] = useState('');
   useEffect(() => { const id = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(id); }, []);
@@ -70,6 +70,14 @@ export default function Today({ data, setData }) {
           <div><b className="mono">{unitsProgress(data.units)}%</b><small>البرنامج</small></div>
         </div>
       </div>
+
+      {quizPending && (
+        <button type="button" className="quiz-banner" onClick={openQuiz}>
+          <span className="qb-icon" aria-hidden="true">?</span>
+          <span><b>اختبار اليوم جاهز!</b><br /><span className="small">اضغطي هنا للإجابة، والنتيجة في النهاية.</span></span>
+          <span className="qb-go" aria-hidden="true">←</span>
+        </button>
+      )}
 
       <div className="today-cols">
         <div className="card list">

@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { quizRoute } from './shared/quiz.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEV = process.argv.includes('--dev');
@@ -153,6 +154,15 @@ app.put('/api/passwords', auth('admin'), (req, res) => {
   }
   save();
   res.json({ ok: true });
+});
+
+app.use('/api', auth(), async (req, res, next) => {
+  const r = await quizRoute({
+    method: req.method, path: '/api' + req.path, query: req.query, body: req.body,
+    role: req.role, db, save: async () => save(),
+  });
+  if (!r) return next();
+  res.status(r.status).json(r.body);
 });
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'غير موجود' }));

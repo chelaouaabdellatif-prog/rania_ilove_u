@@ -8,9 +8,12 @@ import Week from './components/Week.jsx';
 import Units from './components/Units.jsx';
 import Year from './components/Year.jsx';
 import Admin from './components/Admin.jsx';
+import Quiz from './components/Quiz.jsx';
+import { key } from './data.js';
 
 const TABS = [
   ['today', 'مهام اليوم'],
+  ['quiz', 'اختبار اليوم'],
   ['week', 'البرنامج الأسبوعي'],
   ['units', 'المنهج والتقدم'],
   ['year', 'خطة السنة'],
@@ -24,6 +27,7 @@ export default function App() {
   const [data, setData] = useState(EMPTY);
   const [ann, setAnn] = useState(null);
   const [saveMsg, setSaveMsg] = useState('');
+  const [quizPending, setQuizPending] = useState(false);
   const loaded = useRef(false);
 
   const logout = useCallback(async (callServer = true) => {
@@ -73,12 +77,18 @@ export default function App() {
     return () => clearTimeout(t);
   }, [data, logout]);
 
-  // refresh the announcement every 30 s
+  // is there a quiz today that Rania hasn't answered?
+  const checkQuiz = useCallback(() => {
+    api(`/quiz?date=${key(new Date())}`).then((d) => setQuizPending(!!d.quiz && !d.result)).catch(() => {});
+  }, []);
+
+  // refresh the announcement and today's quiz every 30 s
   useEffect(() => {
     if (phase !== 'app') return;
-    const id = setInterval(() => api('/announcement').then(setAnn).catch(() => {}), 30000);
+    checkQuiz();
+    const id = setInterval(() => { api('/announcement').then(setAnn).catch(() => {}); checkQuiz(); }, 30000);
     return () => clearInterval(id);
-  }, [phase]);
+  }, [phase, checkQuiz]);
 
   if (phase === 'loading') return <div className="center muted">جارٍ التحميل…</div>;
   if (phase === 'setup' || phase === 'login')
@@ -103,14 +113,17 @@ export default function App() {
 
         <nav className="tabs" role="tablist">
           {tabs.map(([id, label]) => (
-            <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>{label}</button>
+            <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
+              {label}{id === 'quiz' && quizPending && role !== 'admin' && <span className="dot" aria-label="اختبار جديد" />}
+            </button>
           ))}
           <span className="sp" />
           <span className="save">{saveMsg}</span>
           <button className="btn ghost small" onClick={() => logout()}>خروج</button>
         </nav>
 
-        {tab === 'today' && <Today data={data} setData={setData} />}
+        {tab === 'today' && <Today data={data} setData={setData} quizPending={quizPending && role !== 'admin'} openQuiz={() => setTab('quiz')} />}
+        {tab === 'quiz' && <Quiz role={role} onDone={checkQuiz} />}
         {tab === 'week' && <Week data={data} setData={setData} />}
         {tab === 'units' && <Units data={data} setData={setData} />}
         {tab === 'year' && <Year />}
