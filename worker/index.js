@@ -2,6 +2,7 @@
 // Static files (dist/) are served by the assets binding.
 
 import { quizRoute } from '../shared/quiz.js';
+import { notifyRoute, tick, quizDoneNotice } from '../shared/notify.js';
 
 const SESSION_DAYS = 30;
 const enc = new TextEncoder();
@@ -147,16 +148,36 @@ async function api(req, env, path) {
   }
 
   const db = await load(env);
-  const r = await quizRoute({
-    method, path, query: Object.fromEntries(new URL(req.url).searchParams), body,
-    role: s.role, db, save: () => save(env, db),
-  });
+  const ctx = await notifyCtx(env, db);
+  const args = { method, path, query: Object.fromEntries(new URL(req.url).searchParams), body, role: s.role };
+  const r = (await quizRoute({ ...args, db, save: () => save(env, db), onSubmit: (quiz, result) => quizDoneNotice(ctx, quiz, result) }))
+    || (await notifyRoute({ ...args, ctx }));
   if (r) return json(r.body, r.status);
 
   return err(404, 'غير موجود');
 }
 
+// Push subscriptions live in their own KV key so the minute-by-minute
+// scheduler never overwrites Rania's progress.
+async function notifyCtx(env, db) {
+  const push = (await env.DB.get('push', 'json')) || { subs: {}, sent: {} };
+  return {
+    db, push,
+    saveDb: () => save(env, db),
+    savePush: () => env.DB.put('push', JSON.stringify(push)),
+    subject: env.VAPID_SUBJECT || 'https://rania-ilove-u.chelaouaabdellatif.workers.dev',
+  };
+}
+
 export default {
+  // Cron trigger (every minute): send due reminders.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil((async () => {
+      const db = await load(env);
+      await tick(await notifyCtx(env, db));
+    })());
+  },
+
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname.startsWith('/api/')) {

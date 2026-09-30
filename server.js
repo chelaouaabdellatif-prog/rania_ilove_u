@@ -5,6 +5,9 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { quizRoute } from './shared/quiz.js';
+import { notifyRoute, tick, quizDoneNotice } from './shared/notify.js';
+
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'https://rania-ilove-u.chelaouaabdellatif.workers.dev';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEV = process.argv.includes('--dev');
@@ -156,14 +159,23 @@ app.put('/api/passwords', auth('admin'), (req, res) => {
   res.json({ ok: true });
 });
 
+// notifications: everything lives in db.json (db.push for subscriptions)
+const notifyCtx = () => {
+  db.push ||= { subs: {}, sent: {} };
+  return { db, push: db.push, saveDb: async () => save(), savePush: async () => save(), subject: VAPID_SUBJECT };
+};
+
 app.use('/api', auth(), async (req, res, next) => {
-  const r = await quizRoute({
-    method: req.method, path: '/api' + req.path, query: req.query, body: req.body,
-    role: req.role, db, save: async () => save(),
-  });
+  const ctx = notifyCtx();
+  const args = { method: req.method, path: '/api' + req.path, query: req.query, body: req.body || {}, role: req.role };
+  const r = (await quizRoute({ ...args, db, save: async () => save(), onSubmit: (quiz, result) => quizDoneNotice(ctx, quiz, result) }))
+    || (await notifyRoute({ ...args, ctx }));
   if (!r) return next();
   res.status(r.status).json(r.body);
 });
+
+// reminders: check every 30 s
+setInterval(() => tick(notifyCtx()).catch((e) => console.error('تنبيهات:', e.message)), 30e3);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'غير موجود' }));
 

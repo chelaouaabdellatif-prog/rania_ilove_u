@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { WEEK, key, sundayOf, toMin, bacSubjectFor, unitsProgress, totalSessions } from '../data.js';
 import Session from './Session.jsx';
+import HomeBoard from './HomeBoard.jsx';
+import NotifySettings from './NotifySettings.jsx';
 
 const dateFmt = new Intl.DateTimeFormat('ar-DZ-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -16,7 +18,7 @@ function Ring({ value }) {
   );
 }
 
-export default function Today({ data, setData, quizPending, openQuiz }) {
+export default function Today({ data, setData, quizPending, openQuiz, role }) {
   const [now, setNow] = useState(new Date());
   const [text, setText] = useState('');
   useEffect(() => { const id = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(id); }, []);
@@ -56,6 +58,7 @@ export default function Today({ data, setData, quizPending, openQuiz }) {
 
   return (
     <section className="today">
+      <HomeBoard />
       <div className="today-hero card">
         <Ring value={pct} />
         <div className="today-head">
@@ -110,6 +113,7 @@ export default function Today({ data, setData, quizPending, openQuiz }) {
           </ul>
         </div>
       </div>
+      <NotifySettings role={role} />
     </section>
   );
 }

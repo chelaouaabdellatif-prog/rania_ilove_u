@@ -10,6 +10,7 @@ import Year from './components/Year.jsx';
 import Admin from './components/Admin.jsx';
 import Quiz from './components/Quiz.jsx';
 import { key } from './data.js';
+import { registerSW } from './push.js';
 
 const TABS = [
   ['today', 'مهام اليوم'],
@@ -23,7 +24,7 @@ const EMPTY = { units: {}, weeks: {}, tasks: {} };
 export default function App() {
   const [phase, setPhase] = useState('loading'); // loading | setup | login | app
   const [role, setRole] = useState(null);
-  const [tab, setTab] = useState('today');
+  const [tab, setTab] = useState(() => (new URLSearchParams(location.search).get('tab') === 'quiz' ? 'quiz' : 'today'));
   const [data, setData] = useState(EMPTY);
   const [ann, setAnn] = useState(null);
   const [saveMsg, setSaveMsg] = useState('');
@@ -51,6 +52,8 @@ export default function App() {
 
   // first load
   useEffect(() => {
+    registerSW();
+    if (location.search) history.replaceState(null, '', '/');
     (async () => {
       try {
         const { setup } = await api('/status');
@@ -122,7 +125,7 @@ export default function App() {
           <button className="btn ghost small" onClick={() => logout()}>خروج</button>
         </nav>
 
-        {tab === 'today' && <Today data={data} setData={setData} quizPending={quizPending && role !== 'admin'} openQuiz={() => setTab('quiz')} />}
+        {tab === 'today' && <Today role={role} data={data} setData={setData} quizPending={quizPending && role !== 'admin'} openQuiz={() => setTab('quiz')} />}
         {tab === 'quiz' && <Quiz role={role} onDone={checkQuiz} />}
         {tab === 'week' && <Week data={data} setData={setData} />}
         {tab === 'units' && <Units data={data} setData={setData} />}

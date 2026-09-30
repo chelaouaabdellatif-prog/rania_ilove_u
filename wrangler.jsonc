@@ -11,5 +11,8 @@
   },
   // Stockage : mot de passe, annonce, progression de Rania.
   // Sans "id", wrangler crée le namespace KV automatiquement au premier deploy.
-  "kv_namespaces": [{ "binding": "DB" }]
+  "kv_namespaces": [{ "binding": "DB" }],
+  // Rappels (cours, examens, quiz) : vérifiés chaque minute.
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": { "VAPID_SUBJECT": "https://rania-ilove-u.chelaouaabdellatif.workers.dev" }
 }

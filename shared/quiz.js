@@ -65,7 +65,7 @@ export function history(db) {
 
 // Routes shared by both servers. `db` is loaded, `save()` persists it.
 // Returns { status, body } or null when the path isn't a quiz route.
-export async function quizRoute({ method, path, query, body, role, db, save }) {
+export async function quizRoute({ method, path, query, body, role, db, save, onSubmit }) {
   const isAdmin = role === 'admin';
   const forbid = { status: 403, body: { error: 'هذه العملية للمشرف فقط.' } };
   db.quizzes ||= {};
@@ -92,6 +92,7 @@ export async function quizRoute({ method, path, query, body, role, db, save }) {
     if (!isAdmin) { // the admin can try the quiz without saving a result
       db.results[date] = result;
       await save();
+      await onSubmit?.(quiz, result)?.catch?.(() => {});
     }
     return { status: 200, body: { result, quiz } };
   }

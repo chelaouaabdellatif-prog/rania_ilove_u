@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { key, sundayOf, unitsProgress, totalSessions, UNITS, SUBJ } from '../data.js';
 import Marquee from './Marquee.jsx';
 import QuizAdmin from './QuizAdmin.jsx';
+import NotifyAdmin from './NotifyAdmin.jsx';
 
 export default function Admin({ ann, setAnn, data, onExpired }) {
   const [text, setText] = useState(ann?.text || '');
@@ -78,6 +79,8 @@ export default function Admin({ ann, setAnn, data, onExpired }) {
         </div>
         {msg && <p className="note-ok" role="status">{msg}</p>}
       </div>
+
+      <NotifyAdmin onExpired={onExpired} />
 
       <QuizAdmin onExpired={onExpired} />
 
