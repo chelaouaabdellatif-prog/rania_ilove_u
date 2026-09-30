@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { key } from '../data.js';
 import { QUIZ_SUBJECTS, Review } from './Quiz.jsx';
+import { autoTime, MIN_TIME, MAX_TIME } from '../../shared/quiz.js';
 
-const blankQ = () => ({ q: '', options: ['', ''], answer: -1 });
-const blank = () => ({ title: '', subject: 'de', questions: [blankQ()] });
+const blankQ = () => ({ q: '', options: ['', ''], answer: -1, time: null });
+const blank = () => ({ title: '', subject: 'de', timed: true, questions: [blankQ()] });
+const fmtSec = (s) => (s >= 60 ? `${Math.floor(s / 60)} د ${s % 60 ? `${s % 60} ث` : ''}` : `${s} ث`);
 
 export default function QuizAdmin({ onExpired }) {
   const [all, setAll] = useState({ quizzes: {}, results: {} });
@@ -20,7 +22,7 @@ export default function QuizAdmin({ onExpired }) {
   // load the chosen date into the form
   useEffect(() => {
     const q = all.quizzes[date];
-    setForm(q ? JSON.parse(JSON.stringify({ title: q.title, subject: q.subject, questions: q.questions })) : blank());
+    setForm(q ? JSON.parse(JSON.stringify({ title: q.title, subject: q.subject, timed: !!q.timed, questions: q.questions.map((x) => ({ ...x, time: x.time ?? null })) })) : blank());
     setConfirmDel(false);
   }, [date, all]);
 
@@ -92,9 +94,32 @@ export default function QuizAdmin({ onExpired }) {
           </select>
         </div>
 
+        <label className="switch">
+          <input type="checkbox" id="qz-timed" checked={form.timed} onChange={(e) => setForm({ ...form, timed: e.target.checked })} />
+          <span>⏱ مؤقت لكل سؤال</span>
+          {form.timed && (
+            <span className="muted small">
+              المجموع: {fmtSec(form.questions.reduce((s, q) => s + (Number(q.time) || autoTime(q.q, q.options)), 0))}
+              {' · '}
+              <button type="button" className="linkbtn" onClick={() => setForm({ ...form, questions: form.questions.map((q) => ({ ...q, time: null })) })}>إرجاع الكل للتلقائي</button>
+            </span>
+          )}
+        </label>
+
         {form.questions.map((q, i) => (
           <fieldset key={i} className="qedit">
             <legend>السؤال {i + 1}</legend>
+            {form.timed && (
+              <div className="timeedit">
+                <label htmlFor={`qz-t-${i}`}>⏱ الوقت (ثانية)</label>
+                <input id={`qz-t-${i}`} type="number" inputMode="numeric" min={MIN_TIME} max={MAX_TIME} step="5"
+                  placeholder={String(autoTime(q.q, q.options))} value={q.time ?? ''}
+                  onChange={(e) => setQ(i, { time: e.target.value === '' ? null : Number(e.target.value) })} />
+                <span className="muted small">
+                  {q.time ? <>مُعدَّل · <button type="button" className="linkbtn" onClick={() => setQ(i, { time: null })}>تلقائي ({autoTime(q.q, q.options)} ث)</button></> : 'تلقائي حسب طول السؤال'}
+                </span>
+              </div>
+            )}
             <textarea id={`qz-q-${i}`} rows={2} placeholder="نص السؤال" aria-label={`نص السؤال ${i + 1}`} value={q.q} onChange={(e) => setQ(i, { q: e.target.value })} />
             <p className="muted small">اكتب الاقتراحات واختر الجواب الصحيح بالدائرة.</p>
             {q.options.map((o, k) => (

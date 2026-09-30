@@ -4,11 +4,23 @@
 
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const SUBJECTS = ['de', 'en', 'fr', 'ar', 'hg', 'is', 'other'];
+export const MIN_TIME = 5;
+export const MAX_TIME = 600;
+
+// Automatic time for a question: 15 s + reading time of the question and its options,
+// rounded up to 5 s, between 15 s and 120 s.
+export function autoTime(q, options = []) {
+  const chars = String(q || '').length + options.reduce((n, o) => n + String(o || '').length, 0);
+  return Math.min(120, Math.max(15, Math.ceil((15 + chars / 12) / 5) * 5));
+}
+// Seconds for a question: its own time if set, otherwise the automatic one.
+export const questionTime = (q) => (q.time ? q.time : autoTime(q.q, q.options));
 
 export function validateQuiz(body) {
   const b = body || {};
   const title = String(b.title || '').trim().slice(0, 120);
   const subject = SUBJECTS.includes(b.subject) ? b.subject : 'other';
+  const timed = !!b.timed;
   if (!Array.isArray(b.questions) || b.questions.length === 0) return { error: 'أضف سؤالا واحدا على الأقل.' };
   if (b.questions.length > 30) return { error: '30 سؤالا كحد أقصى.' };
   const questions = [];
@@ -20,14 +32,19 @@ export function validateQuiz(body) {
     if (options.length < 2 || options.length > 4 || options.some((o) => !o)) return { error: `السؤال ${n}: يلزم من 2 إلى 4 اقتراحات غير فارغة.` };
     const answer = Number(raw.answer);
     if (!Number.isInteger(answer) || answer < 0 || answer >= options.length) return { error: `السؤال ${n}: اختر الجواب الصحيح.` };
-    questions.push({ q, options, answer });
+    let time = raw.time === null || raw.time === undefined || raw.time === '' ? null : Number(raw.time);
+    if (time !== null && (!Number.isInteger(time) || time < MIN_TIME || time > MAX_TIME)) return { error: `السؤال ${n}: الوقت بين ${MIN_TIME} و${MAX_TIME} ثانية، أو اتركه فارغا للوقت التلقائي.` };
+    questions.push({ q, options, answer, time });
   }
-  return { quiz: { title, subject, questions, updatedAt: new Date().toISOString() } };
+  return { quiz: { title, subject, timed, questions, updatedAt: new Date().toISOString() } };
 }
 
 // What Rania sees before answering: no correct answers.
 export function publicQuiz(quiz) {
-  return { title: quiz.title, subject: quiz.subject, questions: quiz.questions.map(({ q, options }) => ({ q, options })) };
+  return {
+    title: quiz.title, subject: quiz.subject, timed: !!quiz.timed,
+    questions: quiz.questions.map((x) => ({ q: x.q, options: x.options, ...(quiz.timed ? { time: questionTime(x) } : {}) })),
+  };
 }
 
 export function grade(quiz, answers) {
