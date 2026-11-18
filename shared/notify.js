@@ -9,6 +9,7 @@
 
 import { WEEK, SUBJ } from '../src/data.js';
 import { generateVapid, sendPush } from './webpush.js';
+import { LESSONS, lessonSteps, REVIEW_TASKS } from './lessons.js';
 
 const TZ = 60; // Algeria: UTC+1, no daylight saving
 const WINDOW = 3 * 60e3; // a reminder fires if its time is within the last 3 minutes
@@ -18,7 +19,7 @@ const PUSH_HOSTS = ['googleapis.com', 'mozilla.com', 'mozaws.net', 'push.apple.c
 
 export const KINDS = { exam: 'امتحان', course: 'درس', other: 'موعد' };
 export const REMIND_OPTIONS = [0, 15, 60, 1440]; // minutes before
-export const defaultPrefs = (role) => ({ lead: 10, sessions: role === 'admin' ? 'none' : 'all', events: true, quiz: true, notices: true });
+export const defaultPrefs = (role) => ({ lead: 10, sessions: role === 'admin' ? 'none' : 'all', lessons: role !== 'admin', events: true, quiz: true, notices: true });
 
 // ---------- time helpers (Algeria local time) ----------
 const pad = (n) => String(n).padStart(2, '0');
@@ -108,6 +109,34 @@ export async function tick(ctx, now = Date.now()) {
       }
     }
 
+    // lessons: new lesson (lead minutes before) and reviews (grouped per time slot)
+    if (p.lessons) {
+      const slots = {}; // "date time" -> { date, time, items: [] }
+      for (const l of LESSONS) {
+        for (const st of lessonSteps(l)) {
+          const fire = algToMs(st.date, st.time) - (st.n === 0 ? p.lead : 0) * 60e3;
+          if (!inWindow(fire)) continue;
+          if (st.n === 0) {
+            due.push({ id, key: `${id}|l|${l.id}|0`, data: {
+              title: `درس جديد بعد ${p.lead} دقائق: ${l.titleAr}`, body: `${st.time} · ${l.duration} دقيقة · اقرئي الملخص والكلمات ثم حلي التمارين`,
+              tag: `l-${l.id}`, url: `/?lesson=${l.id}`,
+            } });
+          } else {
+            const k = `${st.date} ${st.time}`;
+            (slots[k] ||= { date: st.date, items: [] }).items.push({ l, n: st.n });
+          }
+        }
+      }
+      for (const [k, s] of Object.entries(slots)) {
+        const one = s.items.length === 1 ? s.items[0] : null;
+        due.push({ id, key: `${id}|r|${k}`, data: {
+          title: one ? `مراجعة ${one.n}/4: ${one.l.titleAr}` : `${s.items.length} مراجعات الليلة (15 دقيقة لكل درس)`,
+          body: one ? REVIEW_TASKS[one.n - 1] : s.items.map((x) => `• ${x.l.titleAr} (${x.n}/4)`).join('\n'),
+          tag: `r-${s.date}`, url: one ? `/?lesson=${one.l.id}` : '/',
+        } });
+      }
+    }
+
     // today's quiz, from 08:00, once (Rania only)
     if (p.quiz && rec.role === 'rania' && today.min >= 8 * 60) {
       const q = db.quizzes?.[today.date];
@@ -150,6 +179,7 @@ function cleanPrefs(p, role) {
     events: x.events === undefined ? d.events : !!x.events,
     quiz: x.quiz === undefined ? d.quiz : !!x.quiz,
     notices: x.notices === undefined ? d.notices : !!x.notices,
+    lessons: x.lessons === undefined ? d.lessons : !!x.lessons,
   };
 }
 const rid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);

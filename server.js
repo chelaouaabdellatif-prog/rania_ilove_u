@@ -21,7 +21,7 @@ const empty = () => ({
   auth: null, // { admin: hash, rania: hash }
   sessions: {},
   announcement: { text: '', active: false, speed: 'normal', updatedAt: null },
-  state: { units: {}, weeks: {}, tasks: {} },
+  state: { units: {}, weeks: {}, tasks: {}, lessons: {} },
 });
 
 function load() {
@@ -138,9 +138,9 @@ app.put('/api/announcement', auth('admin'), (req, res) => {
 app.get('/api/state', auth(), (req, res) => res.json(db.state));
 
 app.put('/api/state', auth(), (req, res) => {
-  const { units, weeks, tasks } = req.body || {};
+  const { units, weeks, tasks, lessons } = req.body || {};
   const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
-  db.state = { units: obj(units), weeks: obj(weeks), tasks: obj(tasks) };
+  db.state = { units: obj(units), weeks: obj(weeks), tasks: obj(tasks), lessons: obj(lessons) };
   save();
   res.json({ ok: true });
 });

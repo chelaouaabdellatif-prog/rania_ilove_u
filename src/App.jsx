@@ -9,22 +9,29 @@ import Units from './components/Units.jsx';
 import Year from './components/Year.jsx';
 import Admin from './components/Admin.jsx';
 import Quiz from './components/Quiz.jsx';
+import Lessons from './components/Lessons.jsx';
 import { key } from './data.js';
 import { registerSW } from './push.js';
 
 const TABS = [
   ['today', 'مهام اليوم'],
   ['quiz', 'اختبار اليوم'],
+  ['lessons', 'الدروس'],
   ['week', 'البرنامج الأسبوعي'],
   ['units', 'المنهج والتقدم'],
   ['year', 'خطة السنة'],
 ];
-const EMPTY = { units: {}, weeks: {}, tasks: {} };
+const EMPTY = { units: {}, weeks: {}, tasks: {}, lessons: {} };
+const params = new URLSearchParams(location.search);
 
 export default function App() {
   const [phase, setPhase] = useState('loading'); // loading | setup | login | app
   const [role, setRole] = useState(null);
-  const [tab, setTab] = useState(() => (new URLSearchParams(location.search).get('tab') === 'quiz' ? 'quiz' : 'today'));
+  const [tab, setTab] = useState(() => (params.get('lesson') ? 'lessons' : params.get('tab') === 'quiz' ? 'quiz' : 'today'));
+  const [lessonId, setLessonId] = useState(() => params.get('lesson'));
+  const [quizDate, setQuizDate] = useState(null);
+  const openQuiz = (d = null) => { setQuizDate(d); setTab('quiz'); };
+  const openLesson = (id) => { setLessonId(id); setTab('lessons'); };
   const [data, setData] = useState(EMPTY);
   const [ann, setAnn] = useState(null);
   const [saveMsg, setSaveMsg] = useState('');
@@ -125,8 +132,9 @@ export default function App() {
           <button className="btn ghost small" onClick={() => logout()}>خروج</button>
         </nav>
 
-        {tab === 'today' && <Today role={role} data={data} setData={setData} quizPending={quizPending && role !== 'admin'} openQuiz={() => setTab('quiz')} />}
-        {tab === 'quiz' && <Quiz role={role} onDone={checkQuiz} />}
+        {tab === 'today' && <Today role={role} data={data} setData={setData} quizPending={quizPending && role !== 'admin'} openQuiz={() => openQuiz()} openLesson={openLesson} />}
+        {tab === 'quiz' && <Quiz key={quizDate || 'today'} role={role} onDone={checkQuiz} initialDate={quizDate} />}
+        {tab === 'lessons' && <Lessons data={data} setData={setData} lessonId={lessonId} setLessonId={setLessonId} openQuiz={openQuiz} />}
         {tab === 'week' && <Week data={data} setData={setData} />}
         {tab === 'units' && <Units data={data} setData={setData} />}
         {tab === 'year' && <Year />}

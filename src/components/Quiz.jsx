@@ -55,8 +55,8 @@ export function Review({ quiz, result }) {
   );
 }
 
-export default function Quiz({ role, onDone }) {
-  const [date, setDate] = useState(key(new Date()));
+export default function Quiz({ role, onDone, initialDate }) {
+  const [date, setDate] = useState(initialDate || key(new Date()));
   const [data, setData] = useState(null); // { quiz, result, history }
   const [err, setErr] = useState('');
   const [step, setStep] = useState(-1); // -1 intro, 0..n-1 questions, n = confirm

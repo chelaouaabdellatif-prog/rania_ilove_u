@@ -65,6 +65,7 @@ export default function NotifySettings({ role }) {
         </select>
       </div>
       <div className="row-wrap checks">
+        <label><input type="checkbox" id="np-lessons" checked={!!prefs.lessons} onChange={(e) => change({ lessons: e.target.checked })} /> الدروس والمراجعات</label>
         <label><input type="checkbox" id="np-events" checked={prefs.events} onChange={(e) => change({ events: e.target.checked })} /> الامتحانات والمواعيد</label>
         <label><input type="checkbox" id="np-quiz" checked={prefs.quiz} onChange={(e) => change({ quiz: e.target.checked })} /> {role === 'admin' ? 'نتائج اختبارات رانيا' : 'اختبار اليوم'}</label>
         {role !== 'admin' && <label><input type="checkbox" id="np-notices" checked={prefs.notices} onChange={(e) => change({ notices: e.target.checked })} /> الملاحظات الجديدة</label>}

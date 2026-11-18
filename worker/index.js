@@ -10,7 +10,7 @@ const enc = new TextEncoder();
 const empty = () => ({
   auth: null,
   announcement: { text: '', active: false, speed: 'normal', updatedAt: null },
-  state: { units: {}, weeks: {}, tasks: {} },
+  state: { units: {}, weeks: {}, tasks: {}, lessons: {} },
 });
 
 async function load(env) {
@@ -127,7 +127,7 @@ async function api(req, env, path) {
     const db = await load(env);
     if (method === 'GET') return json(db.state);
     if (method === 'PUT') {
-      db.state = { units: obj(body.units), weeks: obj(body.weeks), tasks: obj(body.tasks) };
+      db.state = { units: obj(body.units), weeks: obj(body.weeks), tasks: obj(body.tasks), lessons: obj(body.lessons) };
       await save(env, db);
       return json({ ok: true });
     }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { WEEK, key, sundayOf, toMin, bacSubjectFor, unitsProgress, totalSessions } from '../data.js';
 import Session from './Session.jsx';
 import HomeBoard from './HomeBoard.jsx';
+import { stepsForToday, useToggleStep } from './Lessons.jsx';
 import NotifySettings from './NotifySettings.jsx';
 
 const dateFmt = new Intl.DateTimeFormat('ar-DZ-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -18,7 +19,9 @@ function Ring({ value }) {
   );
 }
 
-export default function Today({ data, setData, quizPending, openQuiz, role }) {
+export default function Today({ data, setData, quizPending, openQuiz, openLesson, role }) {
+  const toggleStep = useToggleStep(setData);
+  const lessonSteps = stepsForToday(data);
   const [now, setNow] = useState(new Date());
   const [text, setText] = useState('');
   useEffect(() => { const id = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(id); }, []);
@@ -73,6 +76,22 @@ export default function Today({ data, setData, quizPending, openQuiz, role }) {
           <div><b className="mono">{unitsProgress(data.units)}%</b><small>البرنامج</small></div>
         </div>
       </div>
+
+      {lessonSteps.length > 0 && (
+        <div className="card list today-lessons">
+          <h3>دروس ومراجعات اليوم</h3>
+          {lessonSteps.map(({ l, st, done, late }) => (
+            <div key={l.id + st.n} className={`lstep${done ? ' done' : ''}${late ? ' late' : ''}`}>
+              <button type="button" className="plan-check" aria-pressed={done} onClick={() => toggleStep(l.id, st.n)} aria-label="منجزة">{done ? '✓' : ''}</button>
+              <div className="lstep-main">
+                <b>{st.n === 0 ? 'درس جديد' : `مراجعة ${st.n}/4`}: {l.titleAr}</b>
+                <span className="muted small"><span className="mono">{st.time}</span>{late ? ' · متأخرة، أنجزيها اليوم' : ''}</span>
+              </div>
+              <button className="btn small" onClick={() => openLesson(l.id)}>افتحي</button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {quizPending && (
         <button type="button" className="quiz-banner" onClick={openQuiz}>
